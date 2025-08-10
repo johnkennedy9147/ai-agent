@@ -4,27 +4,44 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 
-if len(sys.argv) < 2:
-    print("Usage: python main.py '<your prompt>' args...")
-    sys.exit(1)
 
-load_dotenv()
-api_key = os.environ.get("GEMINI_API_KEY")
+def main():
+    flags = []
+    prompt_parts = []
 
-client = genai.Client(api_key=api_key)
+    for arg in sys.argv[1:]:
+        if not arg.startswith("--"):
+            prompt_parts.append(arg)
 
-model = "gemini-2.0-flash-001"
-user_prompt = sys.argv[1]
-args = sys.argv[2:]
+    for arg in sys.argv[1:]:
+        if arg.startswith("--"):
+            flags.append(arg)
 
-messages = [
-    types.Content(role="user", parts=[types.Part(text=user_prompt)]),
-]
+    full_prompt = " ".join(prompt_parts)
 
-response = client.models.generate_content(model = model, contents= messages)
+    if len(prompt_parts) < 2:
+        print("AI Code Assistant:")
+        print("Missing user prompt.")
+        print("Usage: python main.py '<your prompt>' args...")
+        sys.exit(1)
 
-print(response.text)
-if "--verbose" in args:
-    print(f"User prompt: {user_prompt}")
-    print("Prompt tokens:", response.usage_metadata.prompt_token_count)
-    print("Response tokens:", response.usage_metadata.candidates_token_count)
+    load_dotenv()
+    api_key = os.environ.get("GEMINI_API_KEY")
+
+    client = genai.Client(api_key=api_key)
+    model = "gemini-2.0-flash-001"
+
+    messages = [
+        types.Content(role="user", parts=[types.Part(text=full_prompt)]),
+    ]
+
+    response = client.models.generate_content(model = model, contents= messages)
+
+    print(response.text)
+    if "--verbose" in flags:
+        print(f"User prompt: {full_prompt}")
+        print("Prompt tokens:", response.usage_metadata.prompt_token_count)
+        print("Response tokens:", response.usage_metadata.candidates_token_count)
+
+if __name__ == "__main__":
+    main()
