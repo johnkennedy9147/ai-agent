@@ -1,4 +1,5 @@
 import unittest
+from functions.write_file import write_file
 from functions.get_files_info import get_files_info
 from functions.get_file_content import get_file_content
 
@@ -43,7 +44,10 @@ class TestGetFileContent(unittest.TestCase):
 
     def test_get_files_info_current_directory(self):
         result = get_file_content("calculator", "lorem.txt")
-        self.assertIn('[...File /home/jk/src/ai-agent/calculator/lorem.txt truncated at 10000 characters]', result)
+        self.assertIn(
+            "[...File /home/jk/src/ai-agent/calculator/lorem.txt truncated at 10000 characters]",
+            result,
+        )
         self.assertTrue(len(result) < 10085)
         print("Result for 'calculator/lorem.txt' file:")
         print(result)
@@ -81,6 +85,47 @@ class TestGetFileContent(unittest.TestCase):
         print("Result for 'pkg/does_not_exist.py' file:")
         print(result)
 
+
+class TestWriteFile(unittest.TestCase):
+
+    def test_write_file_success(self):
+        result = write_file("calculator", "lorem.txt", "wait, this isn't lorem ipsum")
+        self.assertEqual(
+            result, 'Successfully wrote to "lorem.txt" (28 characters written)'
+        )
+        with open("calculator/lorem.txt", "r") as f:
+            content = f.read()
+        self.assertEqual(content, "wait, this isn't lorem ipsum")
+        print("Result for 'pkg/does_not_exist.py' file:")
+        print(result)
+
+    def test_write_file_empty_content(self):
+        result = write_file("calculator", "empty.txt", "")
+        self.assertEqual(result, "Error: Content cannot be empty")
+        print("Result for 'calculator/empty.txt' file:")
+        print(result)
+
+    def test_write_file_sub_directory(self):
+        result = write_file(
+            "calculator", "pkg/morelorem.txt", "lorem ipsum dolor sit amet"
+        )
+        self.assertEqual(
+            result, 'Successfully wrote to "pkg/morelorem.txt" (26 characters written)'
+        )
+        with open("calculator/pkg/morelorem.txt", "r") as f:
+            content = f.read()
+        self.assertEqual(content, "lorem ipsum dolor sit amet")
+        print("Result for 'pkg/morelorem.txt' file:")
+        print(result)
+
+    def test_write_file_outside_directory(self):
+        result = write_file("calculator", "/tmp/temp.txt", "this should not be allowed")
+        self.assertEqual(
+            result,
+            'Error: Cannot write to "/tmp/temp.txt" as it is outside the permitted working directory',
+        )
+        print("Result for file outside working directory:")
+        print(result)
 
 if __name__ == "__main__":
     unittest.main()
