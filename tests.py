@@ -1,4 +1,5 @@
 import unittest
+from functions.run_python_file import run_python_file
 from functions.write_file import write_file
 from functions.get_files_info import get_files_info
 from functions.get_file_content import get_file_content
@@ -126,6 +127,58 @@ class TestWriteFile(unittest.TestCase):
         )
         print("Result for file outside working directory:")
         print(result)
+
+
+class TestRunPythonFile(unittest.TestCase):
+    def test_run_python_file_without_required_args(self):
+        result = run_python_file("calculator", "main.py")
+        expected_output = (
+            "STDOUT:\n"
+            "Calculator App\n"
+            'Usage: python main.py "<expression>"\n'
+            'Example: python main.py "3 + 5"\n'
+            "STDERR:\n\n"
+        )
+        self.assertEqual(result, expected_output)
+        print(result)
+
+    def test_run_python_file_with_expression(self):
+        result = run_python_file("calculator", "main.py", ["3 + 5"])
+        expected_output = (
+            "STDOUT:\n"
+            "┌─────────┐\n"
+            "│  3 + 5  │\n"
+            "│         │\n"
+            "│  =      │\n"
+            "│         │\n"
+            "│  8      │\n"
+            "└─────────┘\n"
+            "STDERR:\n\n"
+        )
+        self.assertEqual(result, expected_output)
+        print(result)
+
+    def test_run_python_file_with_calculator_tests(self):
+        result = run_python_file("calculator", "tests.py")
+        expected_output = (
+            "STDOUT:\n\n"
+            "STDERR:\n"
+            ".........\n"
+            "----------------------------------------------------------------------\n"
+            "Ran 9 tests in 0.000s\n\n"
+            "OK\n"
+        )
+        self.assertEqual(result, expected_output)
+        print(result)
+
+    def test_run_python_file_with_file_outside_of_wd(self):
+        result = run_python_file("calculator", "../main.py")
+        print(result)
+
+    def test_run_python_file_with_nonexistant_file(self):
+        result = run_python_file("calculator", "nonexistent.py")
+        print(result)
+
 
 if __name__ == "__main__":
     unittest.main()
